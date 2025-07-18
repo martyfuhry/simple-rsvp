@@ -6,10 +6,13 @@ services:
     container_name: rsvp-app
     working_dir: /app
     volumes:
-      - ./app:/app            # Mount app source code
-      - rsvp_data:/app/static # Persist uploaded images & JSON
+      - app_data:/app/data
+    restart: unless-stopped
+
+volumes:
+  app_data:
     ports:
-      - "8080:3022"           # Host port 8080 → Container port 5000
+      - "8080:3022"
     environment:
       - ADMIN_PASSWORD=letmein  # Change this for security
     command: >
@@ -20,4 +23,4 @@ services:
     restart: unless-stopped
 
 volumes:
-  rsvp_data:
+  app_data:
