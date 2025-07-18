@@ -1,6 +1,21 @@
+# Use official Python base image
 FROM python:3.11-slim
+
+# Set working directory
 WORKDIR /app
+
+# Install dependencies
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Copy app code
 COPY . .
-RUN pip install flask pillow
-ENV FLASK_APP=app.py
-CMD ["flask", "run", "--host=0.0.0.0", "--port=5000"]
+
+# Create static directory if missing
+RUN mkdir -p static
+
+# Expose port
+EXPOSE 5000
+
+# Run the app
+CMD ["python", "app.py"]
