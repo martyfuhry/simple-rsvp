@@ -189,5 +189,18 @@ def home():
     </main></body></html>
     """)
 
+@app.route("/update-event", methods=["POST"])
+@basic_auth_required
+def update_event():
+    new_data = {
+        "title": request.form["title"],
+        "datetime": request.form["datetime"],
+        "location": request.form["location"],
+        "description": request.form["description"]
+    }
+    save_event(new_data)
+    return redirect("/admin")
+
+
 if __name__ == "__main__":
     app.run(debug=True, host="0.0.0.0", port=3022)
