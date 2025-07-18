@@ -3,6 +3,7 @@
 
 from flask import Flask, request, render_template_string, redirect, url_for, Response, send_from_directory
 import json, os, csv
+import html
 from functools import wraps
 from datetime import datetime, date
 from PIL import Image
@@ -147,10 +148,10 @@ def admin():
     rows = "".join(
         f"<tr><form method='post' action='/edit-rsvp'>"
         f"<input type='hidden' name='index' value='{i}'>"
-        f"<td><input name='name' value='{r['name']}'></td>"
+        f"<td><input name='name' value='{html.escape(r['name'])}'></td>"
         f"<td><input type='number' name='adults' value='{r['adults']}' min='0'></td>"
         f"<td><input type='number' name='kids' value='{r['kids']}' min='0'></td>"
-        f"<td><input name='notes' value='{r['notes']}'></td>"
+        f"<td><input name='notes' value='{html.escape(r['notes'])}'></td>"
         f"""<td>
           <div style="display: flex; gap: 0.5em; align-items: center;">
             <button type="submit" style="padding: 0.25em 0.5em" aria-label="Save">💾</button>
