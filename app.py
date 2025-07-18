@@ -10,12 +10,10 @@ from PIL import Image
 app = Flask(__name__)
 
 DATA_DIR = "data"
-STATIC_DIR = os.path.join(DATA_DIR, "static")
 DATA_FILE = os.path.join(DATA_DIR, "rsvps.json")
 EVENT_FILE = os.path.join(DATA_DIR, "event.json")
 
 os.makedirs(DATA_DIR, exist_ok=True)
-os.makedirs(STATIC_DIR, exist_ok=True)
 
 ADMIN_PASSWORD = os.environ.get("ADMIN_PASSWORD", "letmein")
 
@@ -79,7 +77,7 @@ def format_event_datetime(dt_str):
 def find_cover_image():
     for ext in ["png", "jpg", "jpeg", "webp"]:
         path = f"cover.{ext}"
-        if os.path.exists(os.path.join(STATIC_DIR, path)):
+        if os.path.exists(f"static/{path}"):
             return path
     return None
 
@@ -92,8 +90,7 @@ def upload_cover():
         img = Image.open(file.stream)
         img.thumbnail((1600, 900))
 
-        os.makedirs(STATIC_DIR, exist_ok=True)
-        save_path = os.path.join(STATIC_DIR, f"cover.{ext}")
+        save_path = f"cover.{ext}"
         img.save(save_path)
 
         # Remove other formats
