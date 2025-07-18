@@ -104,6 +104,21 @@ def upload_cover():
         return redirect("/admin")
     return "Invalid file", 400
 
+@app.route("/export.csv")
+@basic_auth_required
+def export_csv():
+    data = load_rsvps()
+
+    def generate():
+        yield "Name,Adults,Kids,Notes\n"
+        for r in data:
+            row = f"{r['name']},{r['adults']},{r['kids']},{r['notes'].replace(',', ';')}\n"
+            yield row
+
+    return Response(generate(), mimetype="text/csv", headers={
+        "Content-Disposition": "attachment; filename=rsvps.csv"
+    })
+
 @app.route("/edit-rsvp", methods=["POST"])
 @basic_auth_required
 def edit_rsvp():
