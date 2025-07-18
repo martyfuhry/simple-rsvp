@@ -170,6 +170,19 @@ def admin():
     </form>
     </main></body></html>""")
 
+@app.route("/update-event", methods=["POST"])
+@basic_auth_required
+def update_event():
+    new_data = {
+        "title": request.form["title"],
+        "datetime": request.form["datetime"],
+        "location": request.form["location"],
+        "description": request.form["description"],
+        "active": request.form.get("active") == "on"
+    }
+    save_event(new_data)
+    return redirect("/admin")
+
 @app.route("/")
 def home():
     event = load_event()
