@@ -42,11 +42,14 @@ def load_rsvps():
     with open(DATA_FILE) as f:
         return json.load(f)
 
+def save_rsvps(data):
+    with open(DATA_FILE, 'w') as f:
+        json.dump(data, f)
+
 def save_rsvp(entry):
     data = load_rsvps()
     data.append(entry)
-    with open(DATA_FILE, 'w') as f:
-        json.dump(data, f)
+    save_rsvps(data)
 
 def basic_auth_required(f):
     @wraps(f)
@@ -74,7 +77,6 @@ def find_cover_image():
             return path
     return None
 
-
 @app.route("/upload", methods=["POST"])
 @basic_auth_required
 def upload_cover():
@@ -83,9 +85,7 @@ def upload_cover():
         ext = file.filename.rsplit(".", 1)[-1].lower()
         img = Image.open(file.stream)
         img.thumbnail((1600, 900))
-
-        os.makedirs("static", exist_ok=True)  # ✅ Ensure directory exists
-
+        os.makedirs("static", exist_ok=True)
         img.save(f"static/cover.{ext}")
         for other_ext in ["png", "jpg", "jpeg", "webp"]:
             if other_ext != ext:
@@ -96,14 +96,46 @@ def upload_cover():
         return redirect("/admin")
     return "Invalid file", 400
 
+@app.route("/edit-rsvp", methods=["POST"])
+@basic_auth_required
+def edit_rsvp():
+    index = int(request.form["index"])
+    data = load_rsvps()
+    if "delete" in request.form:
+        data.pop(index)
+    else:
+        data[index] = {
+            "name": request.form["name"],
+            "adults": int(request.form["adults"]),
+            "kids": int(request.form["kids"]),
+            "notes": request.form.get("notes", "")
+        }
+    save_rsvps(data)
+    return redirect("/admin")
+
 @app.route("/admin")
 @basic_auth_required
 def admin():
     event = load_event()
     data = load_rsvps()
+    total_adults = sum(int(r.get('adults', 0)) for r in data)
+    total_kids = sum(int(r.get('kids', 0)) for r in data)
+    total_guests = total_adults + total_kids
     rows = "".join(
-        f"<tr><td>{r['name']}</td><td>{r['adults']}</td><td>{r['kids']}</td><td>{r['notes']}</td></tr>"
-        for r in data
+        f"<tr><form method='post' action='/edit-rsvp'>"
+        f"<input type='hidden' name='index' value='{i}'>"
+        f"<td><input name='name' value='{r['name']}'></td>"
+        f"<td><input type='number' name='adults' value='{r['adults']}' min='0'></td>"
+        f"<td><input type='number' name='kids' value='{r['kids']}' min='0'></td>"
+        f"<td><input name='notes' value='{r['notes']}'></td>"
+        f"""<td>
+          <div style="display: flex; gap: 0.5em; align-items: center;">
+            <button type="submit" style="padding: 0.25em 0.5em" aria-label="Save">💾</button>
+            <button name="delete" value="1" style="padding: 0.25em 0.5em; margin-bottom: .9em; color: red; background: red; border: 1px solid red;" aria-label="Delete">🗑️</button>
+          </div>
+        </td>"""
+        f"</form></tr>"
+        for i, r in enumerate(data)
     )
     return render_template_string(f"""<!doctype html><html lang='en'>
     <head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
@@ -115,9 +147,10 @@ def admin():
     <p>{event['description']}</p>
     <hr>
     <h2>RSVP List</h2>
+    <p><strong>{total_guests} total guests</strong> ({total_kids} kids, {total_adults} adults)</p>
     <a href='/export.csv'>Download CSV</a>
     <table>
-      <thead><tr><th>Name</th><th>Adults</th><th>Kids</th><th>Notes</th></tr></thead>
+      <thead><tr><th>Name</th><th>Adults</th><th>Kids</th><th>Notes</th><th>Actions</th></tr></thead>
       <tbody>{rows}</tbody>
     </table>
     <hr>
@@ -136,8 +169,6 @@ def admin():
       <button type="submit">Upload</button>
     </form>
     </main></body></html>""")
-
-
 
 @app.route("/")
 def home():
@@ -163,15 +194,12 @@ def home():
     <title>{event['title']}</title></head>
     <body><main class='container'>
       <h1 style='text-align: center'>{event['title']}</h1>
-    {f'<div style="margin: 2em 0; text-align: center;"><img src="/static/{cover}" style="max-height: 400px; width: auto; border-radius: 12px;"></div>' if cover else ''}
+      {f'<div style="margin: 2em 0; text-align: center;"><img src="/static/{cover}" style="max-height: 400px; width: auto; border-radius: 12px;"></div>' if cover else ''}
       <h3 style='text-align: center'>{formatted_date}</h3>
-    <h4 style='text-align: center'>{event['location']}</h4>
-    <p style='text-align: center; margin-top: -0.5em'>
-      <a href='https://www.google.com/maps/search/?api=1&query={event["location"].replace(" ", "+")}' target='_blank' style='font-size: 0.9em;'>
-        📍 View on Google Maps
-      </a>
-    </p>
-
+      <h4 style='text-align: center'>{event['location']}</h4>
+      <p style='text-align: center; margin-top: -0.5em'>
+        <a href='https://www.google.com/maps/search/?api=1&query={event['location'].replace(' ', '+')}' target='_blank' style='font-size: 0.9em;'>📍 View on Google Maps</a>
+      </p>
       <p style='text-align:center;font-weight: bold'>{countdown}</p>
       <p style='margin-top: 2em'>{event['description']}</p>
       {'' if is_past else '''
@@ -189,30 +217,7 @@ def home():
     </main></body></html>
     """)
 
-@app.route("/rsvp", methods=["POST"])
-def rsvp():
-    entry = {
-        "name": request.form['name'],
-        "adults": int(request.form.get('adults', 1)),
-        "kids": int(request.form.get('kids', 0)),
-        "notes": request.form.get('notes', '')
-    }
-    save_rsvp(entry)
-    return "<main class='container'><h1 style='text-align: center'>Thank you for the RSVP</h1></main>"
-
-
-@app.route("/update-event", methods=["POST"])
-@basic_auth_required
-def update_event():
-    new_data = {
-        "title": request.form["title"],
-        "datetime": request.form["datetime"],
-        "location": request.form["location"],
-        "description": request.form["description"]
-    }
-    save_event(new_data)
-    return redirect("/admin")
-
-
 if __name__ == "__main__":
-    app.run(debug=True, host="0.0.0.0", port=3022)
+    import os
+    port = int(os.environ.get("PORT", 3022))
+    app.run(debug=True, host="0.0.0.0", port=port)
