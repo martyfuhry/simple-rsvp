@@ -11,10 +11,6 @@ venv/
 env/
 *.egg-info/
 
-# Data files (persisted via volume)
-data/
-!data/.gitkeep  # Keep the folder structure if needed
-
 # OS junk
 .DS_Store
 Thumbs.db
