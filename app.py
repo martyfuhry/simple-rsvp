@@ -160,6 +160,10 @@ def admin():
       <label>Date & Time: <input name="datetime" type="datetime-local" value="{event['datetime'][:16]}" required></label>
       <label>Location: <input name="location" value="{event['location']}" required></label>
       <label>Description: <textarea name="description" required>{event['description']}</textarea></label>
+<label>
+  <input type="checkbox" name="active" { 'checked' if event.get('active', True) else '' }>
+  Event is active
+</label>
       <button type="submit">Save Event Info</button>
     </form>
     <hr>
