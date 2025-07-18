@@ -39,7 +39,7 @@ def require_auth(f):
 
 @app.route("/")
 def index():
-    return render_template_string("""
+    return render_template_string("""<!doctype html><html lang='en'><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'><link rel="stylesheet" href="https://unpkg.com/@picocss/pico@latest/css/pico.min.css"><title>RSVP</title></head><body><main class="container">
     <h2>RSVP Form</h2>
     <form action='/submit' method='post'>
         Name: <input name='name' required><br>
@@ -48,7 +48,7 @@ def index():
         Notes: <textarea name='notes'></textarea><br>
         <button type='submit'>Submit RSVP</button>
     </form>
-    """)
+    </main></body></html>""")
 
 @app.route("/submit", methods=["POST"])
 def submit():
@@ -76,7 +76,7 @@ def admin():
         <tr><th>Name</th><th>Adults</th><th>Kids</th><th>Notes</th></tr>
         {rows}
     </table>
-    """)
+    </main></body></html>""")
 
 @app.route("/export.csv")
 @require_auth
