@@ -9,8 +9,14 @@ from PIL import Image
 
 app = Flask(__name__)
 
-DATA_FILE = "rsvps.json"
-EVENT_FILE = "event.json"
+DATA_DIR = "data"
+STATIC_DIR = os.path.join(DATA_DIR, "static")
+DATA_FILE = os.path.join(DATA_DIR, "rsvps.json")
+EVENT_FILE = os.path.join(DATA_DIR, "event.json")
+
+os.makedirs(DATA_DIR, exist_ok=True)
+os.makedirs(STATIC_DIR, exist_ok=True)
+
 ADMIN_PASSWORD = os.environ.get("ADMIN_PASSWORD", "letmein")
 
 if not os.path.exists(DATA_FILE):
@@ -73,7 +79,7 @@ def format_event_datetime(dt_str):
 def find_cover_image():
     for ext in ["png", "jpg", "jpeg", "webp"]:
         path = f"cover.{ext}"
-        if os.path.exists(f"static/{path}"):
+        if os.path.exists(os.path.join(STATIC_DIR, path)):
             return path
     return None
 
@@ -85,14 +91,19 @@ def upload_cover():
         ext = file.filename.rsplit(".", 1)[-1].lower()
         img = Image.open(file.stream)
         img.thumbnail((1600, 900))
-        os.makedirs("static", exist_ok=True)
-        img.save(f"static/cover.{ext}")
+
+        os.makedirs(STATIC_DIR, exist_ok=True)
+        save_path = os.path.join(STATIC_DIR, f"cover.{ext}")
+        img.save(save_path)
+
+        # Remove other formats
         for other_ext in ["png", "jpg", "jpeg", "webp"]:
             if other_ext != ext:
                 try:
-                    os.remove(f"static/cover.{other_ext}")
+                    os.remove(os.path.join(STATIC_DIR, f"cover.{other_ext}"))
                 except FileNotFoundError:
                     pass
+
         return redirect("/admin")
     return "Invalid file", 400
 

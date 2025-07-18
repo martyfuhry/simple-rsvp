@@ -1,0 +1,35 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.log
+*.sqlite3
+.env
+.venv/
+venv/
+env/
+*.egg-info/
+
+# Data files (persisted via volume)
+data/
+!data/.gitkeep  # Keep the folder structure if needed
+
+# OS junk
+.DS_Store
+Thumbs.db
+
+# VSCode or JetBrains
+.vscode/
+.idea/
+
+# Docker
+*.pid
+*.sock
+
+# Mac/Linux editor temp files
+*~
+*.swp
+
+# GitHub Actions cache
+.github/__pycache__/
