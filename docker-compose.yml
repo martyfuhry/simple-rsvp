@@ -1,10 +1,23 @@
-version: "3"
+version: '3.8'
+
 services:
   rsvp:
-    build: .
-    ports:
-      - "5000:5000"
+    image: python:3.11-slim
+    container_name: rsvp-app
+    working_dir: /app
     volumes:
-      - ./rsvps.json:/app/rsvps.json
+      - ./app:/app            # Mount app source code
+      - rsvp_data:/app/static # Persist uploaded images & JSON
+    ports:
+      - "8080:5000"           # Host port 8080 → Container port 5000
     environment:
-      ADMIN_PASSWORD: letmein
+      - ADMIN_PASSWORD=letmein  # Change this for security
+    command: >
+      sh -c "
+      pip install --no-cache-dir -r requirements.txt &&
+      python app.py
+      "
+    restart: unless-stopped
+
+volumes:
+  rsvp_data:
