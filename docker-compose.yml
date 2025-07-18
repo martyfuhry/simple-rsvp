@@ -9,7 +9,7 @@ services:
       - ./app:/app            # Mount app source code
       - rsvp_data:/app/static # Persist uploaded images & JSON
     ports:
-      - "3022:5000"           # Host port 8080 → Container port 5000
+      - "8080:3022"           # Host port 8080 → Container port 5000
     environment:
       - ADMIN_PASSWORD=letmein  # Change this for security
     command: >
