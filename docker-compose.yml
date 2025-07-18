@@ -4,6 +4,9 @@ services:
   rsvp:
     image: python:3.11-slim
     container_name: rsvp-app
+    build:
+      context: .
+      dockerfile: Dockerfile
     working_dir: /app
     volumes:
       - ./app:/app            # Mount app source code
