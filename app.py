@@ -196,8 +196,25 @@ def rsvp():
         "notes": request.form.get('notes', '')
     }
     save_rsvp(entry)
-    return "<main class='container'><h1 style='text-align: center'>Thank you for the RSVP</h1></main>"
-
+    event = load_event()
+    formatted_date, formatted_time = format_event_datetime(event['datetime']) if event else "soon"
+    return render_template_string(f"""
+    <!doctype html>
+    <html lang='en'>
+    <head>
+      <meta charset='utf-8'>
+      <meta name='viewport' content='width=device-width, initial-scale=1'>
+      <link rel='stylesheet' href='https://unpkg.com/@picocss/pico@latest/css/pico.min.css'>
+      <title>RSVP Confirmation</title>
+    </head>
+    <body>
+      <main class='container' style='text-align: center; padding-top: 4em;'>
+        <h1>Thank you for the RSVP!</h1>
+        <p style='font-size: 1.2em; margin-top: 1em;'>See you {formatted_date} at {formatted_time}.</p>
+      </main>
+    </body>
+    </html>
+    """)
 
 @app.route("/")
 def home():
