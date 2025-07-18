@@ -81,6 +81,7 @@ def find_cover_image():
             return path
     return None
 
+
 @app.route("/upload", methods=["POST"])
 @basic_auth_required
 def upload_cover():
@@ -89,15 +90,14 @@ def upload_cover():
         ext = file.filename.rsplit(".", 1)[-1].lower()
         img = Image.open(file.stream)
         img.thumbnail((1600, 900))
+        os.makedirs("static", exist_ok=True)
+        img.save(f"static/cover.{ext}")
 
-        save_path = f"cover.{ext}"
-        img.save(save_path)
-
-        # Remove other formats
+        # Remove any other cover.* files in static/
         for other_ext in ["png", "jpg", "jpeg", "webp"]:
             if other_ext != ext:
                 try:
-                    os.remove(os.path.join(STATIC_DIR, f"cover.{other_ext}"))
+                    os.remove(f"static/cover.{other_ext}")
                 except FileNotFoundError:
                     pass
 
