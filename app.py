@@ -66,7 +66,7 @@ def basic_auth_required(f):
 def format_event_datetime(dt_str):
     try:
         dt = datetime.fromisoformat(dt_str)
-        return dt.strftime("%A, %B %d, %Y"), dt.strftime("%I:%M %p")
+        return dt.strftime("%A, %B %d, %Y"), dt.strftime("%-I:%M %p")
     except:
         return "Invalid date", "Invalid time"
 
@@ -196,6 +196,7 @@ def home():
       <h1 style='text-align: center'>{event['title']}</h1>
       {f'<div style="margin: 2em 0; text-align: center;"><img src="/static/{cover}" style="max-height: 400px; width: auto; border-radius: 12px;"></div>' if cover else ''}
       <h3 style='text-align: center'>{formatted_date}</h3>
+      <h4 style='text-align: center'>Join us at {formatted_time}</h4>
       <h4 style='text-align: center'>{event['location']}</h4>
       <p style='text-align: center; margin-top: -0.5em'>
         <a href='https://www.google.com/maps/search/?api=1&query={event['location'].replace(' ', '+')}' target='_blank' style='font-size: 0.9em;'>📍 View on Google Maps</a>
