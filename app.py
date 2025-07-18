@@ -187,6 +187,18 @@ def update_event():
     save_event(new_data)
     return redirect("/admin")
 
+@app.route("/rsvp", methods=["POST"])
+def rsvp():
+    entry = {
+        "name": request.form['name'],
+        "adults": int(request.form.get('adults', 1)),
+        "kids": int(request.form.get('kids', 0)),
+        "notes": request.form.get('notes', '')
+    }
+    save_rsvp(entry)
+    return "<main class='container'><h1 style='text-align: center'>Thank you for the RSVP</h1></main>"
+
+
 @app.route("/")
 def home():
     event = load_event()
