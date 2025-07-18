@@ -10,12 +10,10 @@ from PIL import Image
 app = Flask(__name__)
 
 DATA_DIR = "data"
-STATIC_DIR = os.path.join(DATA_DIR, "static")
 DATA_FILE = os.path.join(DATA_DIR, "rsvps.json")
 EVENT_FILE = os.path.join(DATA_DIR, "event.json")
 
 os.makedirs(DATA_DIR, exist_ok=True)
-os.makedirs(STATIC_DIR, exist_ok=True)
 
 ADMIN_PASSWORD = os.environ.get("ADMIN_PASSWORD", "letmein")
 
@@ -79,9 +77,10 @@ def format_event_datetime(dt_str):
 def find_cover_image():
     for ext in ["png", "jpg", "jpeg", "webp"]:
         path = f"cover.{ext}"
-        if os.path.exists(os.path.join(STATIC_DIR, path)):
+        if os.path.exists(f"static/{path}"):
             return path
     return None
+
 
 @app.route("/upload", methods=["POST"])
 @basic_auth_required
@@ -91,21 +90,34 @@ def upload_cover():
         ext = file.filename.rsplit(".", 1)[-1].lower()
         img = Image.open(file.stream)
         img.thumbnail((1600, 900))
+        os.makedirs("static", exist_ok=True)
+        img.save(f"static/cover.{ext}")
 
-        os.makedirs(STATIC_DIR, exist_ok=True)
-        save_path = os.path.join(STATIC_DIR, f"cover.{ext}")
-        img.save(save_path)
-
-        # Remove other formats
+        # Remove any other cover.* files in static/
         for other_ext in ["png", "jpg", "jpeg", "webp"]:
             if other_ext != ext:
                 try:
-                    os.remove(os.path.join(STATIC_DIR, f"cover.{other_ext}"))
+                    os.remove(f"static/cover.{other_ext}")
                 except FileNotFoundError:
                     pass
 
         return redirect("/admin")
     return "Invalid file", 400
+
+@app.route("/export.csv")
+@basic_auth_required
+def export_csv():
+    data = load_rsvps()
+
+    def generate():
+        yield "Name,Adults,Kids,Notes\n"
+        for r in data:
+            row = f"{r['name']},{r['adults']},{r['kids']},{r['notes'].replace(',', ';')}\n"
+            yield row
+
+    return Response(generate(), mimetype="text/csv", headers={
+        "Content-Disposition": "attachment; filename=rsvps.csv"
+    })
 
 @app.route("/edit-rsvp", methods=["POST"])
 @basic_auth_required
