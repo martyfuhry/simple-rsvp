@@ -1,5 +1,7 @@
 # Simple RSVP App
 
+![Simple RSVP](assets/header.png)
+
 This is a lightweight, self-hosted RSVP tracker for single events like family
 feasts, parties, or community gatherings.
 
