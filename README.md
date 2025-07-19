@@ -1,35 +1,25 @@
 # Simple RSVP App
 
-A minimal, self-hosted RSVP form using Flask and JSON storage.
+This is a lightweight, self-hosted RSVP tracker for single events like family
+feasts, parties, or community gatherings.
 
-## Features
+- ✉️ Collects RSVPs with names, adult/kid counts, and notes
+- 🧑‍💻 Admin view with editable guest list and CSV export
+- 📸 Supports a custom event banner (cover image)
+- 🔒 Admin access protected by HTTP Basic Auth
+- 📦 Docker-ready and volume-persistent
+- 💡 Mobile-friendly with responsive layout
 
-- Simple RSVP form (name, adults, kids, notes)
-- Flat-file JSON storage
-- Admin view with CSV export
-- Runs with Docker Compose or locally with Python
+---
 
-## Setup
-
-### With Docker
+## 🚀 Quickstart (Docker)
 
 ```bash
-docker compose up
+docker compose up -d
 ```
 
-Then visit:
-
-- `http://localhost:5000` — RSVP form
-- `http://localhost:5000/admin?pw=letmein` — admin view
-- `http://localhost:5000/export.csv?pw=letmein` — CSV export
-
-### Locally
+Or run the python app
 
 ```bash
-pip install flask
 python app.py
 ```
-
-## Customization
-
-Change the password by setting the `ADMIN_PASSWORD` environment variable.
