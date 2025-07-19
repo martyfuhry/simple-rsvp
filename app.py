@@ -170,6 +170,7 @@ def admin_edit():
     return render_template_string(f"""<!doctype html>
     <html lang='en'>
     <head>
+      <link rel="icon" href="/static/favicon.ico">
       <meta charset='utf-8'>
       <meta name='viewport' content='width=device-width, initial-scale=1'>
       <link rel="stylesheet" href="https://unpkg.com/@picocss/pico@latest/css/pico.min.css">
@@ -206,6 +207,7 @@ def admin():
 
     return render_template_string(f"""<!doctype html><html lang='en'>
     <head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+      <link rel="icon" href="/static/favicon.ico">
     <link rel="stylesheet" href="https://unpkg.com/@picocss/pico@latest/css/pico.min.css">
     <title>Admin</title></head><body><main class="container">
     <h1>{event['title']}</h1>
@@ -278,6 +280,7 @@ def rsvp():
     <!doctype html>
     <html lang='en'>
     <head>
+      <link rel="icon" href="/static/favicon.ico">
       <meta charset='utf-8'>
       <meta name='viewport' content='width=device-width, initial-scale=1'>
       <link rel='stylesheet' href='https://unpkg.com/@picocss/pico@latest/css/pico.min.css'>
@@ -312,6 +315,7 @@ def home():
     return render_template_string(f"""
     <!doctype html><html lang='en'>
     <head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+      <link rel="icon" href="/static/favicon.ico">
     <link rel='stylesheet' href='https://unpkg.com/@picocss/pico@latest/css/pico.min.css'>
     <title>{event['title']}</title></head>
     <body><main class='container'>
