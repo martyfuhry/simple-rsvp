@@ -137,6 +137,57 @@ def edit_rsvp():
     save_rsvps(data)
     return redirect("/admin")
 
+
+@app.route("/admin/edit")
+@basic_auth_required
+def admin_edit():
+    data = load_rsvps()
+    total_adults = sum(int(r.get('adults', 0)) for r in data)
+    total_kids = sum(int(r.get('kids', 0)) for r in data)
+    total_guests = total_adults + total_kids
+
+    rows = "".join(
+        f"""
+        <form method='post' action='/edit-rsvp' style='border: 1px solid #333; padding: 1em; border-radius: 8px; background: #111;'>
+          <input type='hidden' name='index' value='{i}'>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1em; max-width: 700px;">
+            <label>Name<input name='name' value='{html.escape(r['name'])}'></label>
+            <label>Notes<input name='notes' value='{html.escape(r['notes'])}'></label>
+            <label>Adults<input type='number' name='adults' value='{r['adults']}' min='0'></label>
+            <label>Kids<input type='number' name='kids' value='{r['kids']}' min='0'></label>
+          </div>
+
+            <div class="grid" style="grid-template-columns: auto auto; justify-content: end; gap: 0.5em;">
+              <button type="submit" class="primary">Save</button>
+              <button type="button" class="secondary" style="background-color: #900;" onclick="this.nextElementSibling.style.display='inline'; this.style.display='none';">Delete</button>
+              <button type="submit" name="delete" value="1" class="secondary" style="background-color: #900; display: none;">Confirm?</button>
+            </div>
+        </form>
+        """
+        for i, r in enumerate(data)
+    )
+
+    return render_template_string(f"""<!doctype html>
+    <html lang='en'>
+    <head>
+      <link rel="icon" href="/static/favicon.ico">
+      <meta charset='utf-8'>
+      <meta name='viewport' content='width=device-width, initial-scale=1'>
+      <link rel="stylesheet" href="https://unpkg.com/@picocss/pico@latest/css/pico.min.css">
+      <title>Edit RSVPs</title>
+    </head>
+    <body>
+      <main class="container">
+        <h1>Edit RSVP List</h1>
+        <p><strong>{total_guests} total guests</strong> ({total_kids} kids, {total_adults} adults)</p>
+        <a href='/admin'>← Back to Admin</a>
+        <div style="display: flex; flex-direction: column; gap: 1.5em; margin-top: 2em; max-width: 900px; margin-left: auto; margin-right: auto;">
+          {rows}
+        </div>
+      </main>
+    </body>
+    </html>""")
+
 @app.route("/admin")
 @basic_auth_required
 def admin():
@@ -145,38 +196,34 @@ def admin():
     total_adults = sum(int(r.get('adults', 0)) for r in data)
     total_kids = sum(int(r.get('kids', 0)) for r in data)
     total_guests = total_adults + total_kids
+
     rows = "".join(
-        f"<tr><form method='post' action='/edit-rsvp'>"
-        f"<input type='hidden' name='index' value='{i}'>"
-        f"<td><input name='name' value='{html.escape(r['name'])}'></td>"
-        f"<td><input type='number' name='adults' value='{r['adults']}' min='0'></td>"
-        f"<td><input type='number' name='kids' value='{r['kids']}' min='0'></td>"
-        f"<td><input name='notes' value='{html.escape(r['notes'])}'></td>"
-        f"""<td>
-          <div style="display: flex; gap: 0.5em; align-items: center;">
-            <button type="submit" style="padding: 0.25em 0.5em" aria-label="Save">💾</button>
-            <button name="delete" value="1" style="padding: 0.25em 0.5em; margin-bottom: .9em; color: red; background: red; border: 1px solid red;" aria-label="Delete">🗑️</button>
-          </div>
-        </td>"""
-        f"</form></tr>"
-        for i, r in enumerate(data)
+        f"<tr><td>{html.escape(r['name'])}</td>"
+        f"<td>{r['adults']}</td>"
+        f"<td>{r['kids']}</td>"
+        f"<td>{html.escape(r['notes'])}</td></tr>"
+        for r in data
     )
+
     return render_template_string(f"""<!doctype html><html lang='en'>
     <head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
-    <link rel=\"stylesheet\" href=\"https://unpkg.com/@picocss/pico@latest/css/pico.min.css\">
-    <title>Admin</title></head><body><main class=\"container\">
+      <link rel="icon" href="/static/favicon.ico">
+    <link rel="stylesheet" href="https://unpkg.com/@picocss/pico@latest/css/pico.min.css">
+    <title>Admin</title></head><body><main class="container">
     <h1>{event['title']}</h1>
     <p><strong>Date:</strong> {event['datetime']}<br>
     <strong>Location:</strong> {event['location']}</p>
     <p>{event['description']}</p>
+
     <hr>
     <h2>RSVP List</h2>
     <p><strong>{total_guests} total guests</strong> ({total_kids} kids, {total_adults} adults)</p>
-    <a href='/export.csv'>Download CSV</a>
+    <a href='/export.csv'>Download CSV</a> | <a href='/admin/edit'>✏️ Edit RSVPs</a>
     <table>
-      <thead><tr><th>Name</th><th>Adults</th><th>Kids</th><th>Notes</th><th>Actions</th></tr></thead>
+      <thead><tr><th>Name</th><th>Adults</th><th>Kids</th><th>Notes</th></tr></thead>
       <tbody>{rows}</tbody>
     </table>
+
     <hr>
     <h2>Edit Event Info</h2>
     <form action="/update-event" method="post">
@@ -184,12 +231,13 @@ def admin():
       <label>Date & Time: <input name="datetime" type="datetime-local" value="{event['datetime'][:16]}" required></label>
       <label>Location: <input name="location" value="{event['location']}" required></label>
       <label>Description: <textarea name="description" required>{event['description']}</textarea></label>
-<label>
-  <input type="checkbox" name="active" { 'checked' if event.get('active', True) else '' }>
-  Event is active
-</label>
+      <label>
+        <input type="checkbox" name="active" {'checked' if event.get('active', True) else ''}>
+        Event is active
+      </label>
       <button type="submit">Save Event Info</button>
     </form>
+
     <hr>
     <h2>Upload New Cover Image</h2>
     <form action="/upload" method="post" enctype="multipart/form-data">
@@ -232,6 +280,7 @@ def rsvp():
     <!doctype html>
     <html lang='en'>
     <head>
+      <link rel="icon" href="/static/favicon.ico">
       <meta charset='utf-8'>
       <meta name='viewport' content='width=device-width, initial-scale=1'>
       <link rel='stylesheet' href='https://unpkg.com/@picocss/pico@latest/css/pico.min.css'>
@@ -266,6 +315,7 @@ def home():
     return render_template_string(f"""
     <!doctype html><html lang='en'>
     <head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+      <link rel="icon" href="/static/favicon.ico">
     <link rel='stylesheet' href='https://unpkg.com/@picocss/pico@latest/css/pico.min.css'>
     <title>{event['title']}</title></head>
     <body><main class='container'>
