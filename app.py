@@ -211,12 +211,18 @@ def update_event():
     save_event(new_data)
     return redirect("/admin")
 
+def safe_int(value):
+    try:
+        return max(0, int(value))
+    except (TypeError, ValueError):
+        return 0
+
 @app.route("/rsvp", methods=["POST"])
 def rsvp():
     entry = {
         "name": request.form['name'],
-        "adults": int(request.form.get('adults', 1)),
-        "kids": int(request.form.get('kids', 0)),
+        "adults": safe_int(request.form.get('adults', 1)),
+        "kids": safe_int(request.form.get('kids', 0)),
         "notes": request.form.get('notes', '')
     }
     save_rsvp(entry)
