@@ -1,6 +1,6 @@
 # Simple RSVP App
 
-![Simple RSVP](assets/header.png)
+<img src="assets/readme-header.png" alt="Simple RSVP" width="300">
 
 This is a lightweight, self-hosted RSVP tracker for single events like family
 feasts, parties, or community gatherings.
